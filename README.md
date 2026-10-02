@@ -17,10 +17,10 @@ Suggestions use bundled word lists and only track typing through this keyboard. 
 
 ## Install
 
-Once this repository is published, replace `<repository-url>` with its Git URL:
+Install from GitHub:
 
 ```bash
-omarchy plugin add <repository-url> --yes
+omarchy plugin add https://github.com/uripg/omarchy-tablet --yes
 cd ~/.config/omarchy/plugins/io.github.uripg.tablet
 omarchy pkg add base-devel wayland libxkbcommon cairo pango python wtype brightnessctl wireplumber
 ./scripts/setup
