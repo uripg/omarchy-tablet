@@ -1,0 +1,3 @@
+Source: https://github.com/jjsullivan5196/wvkbd
+Commit: e14b53aff4fd1f471add6b21b3885c2cff945509
+Local changes: tablet layout, 500 ms long press, pointer-entry coordinates, completion output, writing-strip reservation, build dependencies.

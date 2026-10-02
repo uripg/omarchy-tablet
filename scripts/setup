@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Explicit build step. Omarchy's plugin manager never runs install hooks.
+set -euo pipefail
+plugin_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+for cmd in python3 make cc pkg-config wayland-scanner wtype brightnessctl wpctl; do
+  if ! command -v "$cmd" >/dev/null; then
+    echo "Missing $cmd. Install dependencies with:"
+    echo "  omarchy pkg add base-devel wayland libxkbcommon cairo pango python wtype brightnessctl wireplumber"
+    exit 1
+  fi
+done
+pkg-config --exists wayland-client xkbcommon pangocairo
+build_dir=$(mktemp -d)
+trap 'rm -rf -- "$build_dir"' EXIT
+cp -a "$plugin_dir/vendor/wvkbd/." "$build_dir/"
+make -C "$build_dir" -j"$(getconf _NPROCESSORS_ONLN)" LAYOUT=tablet wvkbd-tablet
+data_dir=${XDG_DATA_HOME:-$HOME/.local/share}/omarchy-tablet
+install -Dm755 "$build_dir/wvkbd-tablet" "$data_dir/bin/wvkbd-tablet.new"
+mv -- "$data_dir/bin/wvkbd-tablet.new" "$data_dir/bin/wvkbd-tablet"
+mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}/omarchy-tablet"
+echo 'Keyboard built. Run scripts/doctor to inspect hardware and permissions.'
+echo 'Then enable with: omarchy plugin enable io.github.uripg.tablet'

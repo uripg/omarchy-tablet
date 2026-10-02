@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.uripg.tablet",
+  "name": "Tablet Mode",
+  "version": "0.1.0",
+  "author": "uripg",
+  "license": "GPL-3.0-only",
+  "description": "Touch keyboard, portrait rotation, media controls and Zen reading for convertible laptops.",
+  "kinds": [
+    "service",
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "service": "Service.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Tablet Mode",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}

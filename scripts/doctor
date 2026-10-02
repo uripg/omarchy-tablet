@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+import json,os,subprocess,sys,shutil
+from pathlib import Path
+root=Path(__file__).resolve().parents[1];sys.path.insert(0,str(root/'backend'))
+from hardware import load_settings,switch_devices,switch_state,choose_monitor,choose_backlight,choose_devices
+home=Path.home();config=Path(os.environ.get('XDG_CONFIG_HOME',home/'.config'))/'omarchy-tablet'
+settings=load_settings(config/'settings.json')
+for cmd in ['python3','hyprctl','quickshell','wtype','brightnessctl','wpctl','omarchy']:
+ print(f'{cmd}: {shutil.which(cmd) or "MISSING"}')
+keyboard=Path(os.environ.get('XDG_DATA_HOME',home/'.local/share'))/'omarchy-tablet/bin/wvkbd-tablet'
+print('Keyboard:', 'built' if keyboard.exists() else 'run scripts/setup')
+print('Tablet switches:',switch_devices())
+try: print('Tablet switch active:',switch_state(settings['switch_name']))
+except (OSError,RuntimeError) as e:print(e)
+if os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):
+ monitors=json.loads(subprocess.check_output(['hyprctl','monitors','-j']))
+ devices=json.loads(subprocess.check_output(['hyprctl','devices','-j']))
+ monitor=choose_monitor(monitors,settings['monitor'])
+ print('Selected display:',monitor['name'] if monitor else 'NONE')
+ print('Touchscreens to rotate:',choose_devices(devices,'touch',settings['touch_devices']))
+ print('Pens to rotate:',choose_devices(devices,'tablets',settings['pen_devices']))
+print('Backlight:',choose_backlight(settings['backlight']))

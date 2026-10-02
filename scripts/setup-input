@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+"""Grant the active local session access only to discovered tablet switches."""
+import os,subprocess,sys,tempfile
+from pathlib import Path
+root=Path(__file__).resolve().parents[1];sys.path.insert(0,str(root/'backend'))
+from hardware import switch_devices
+names=sorted({name for _,name in switch_devices()})
+if not names:sys.exit('No tablet switch found. Manual mode is still available.')
+if any(any(c in name for c in '\\"\n\r*?[]') for name in names):sys.exit('Switch name needs a manually written udev rule.')
+rules=''.join('SUBSYSTEM=="input", KERNEL=="event*", ATTRS{name}=="'+name+'", TAG+="uaccess"\n' for name in names)
+print('The following rule grants access to tablet switch state only:\n'+rules)
+if not sys.stdin.isatty():sys.exit('Run this helper in a terminal to install the rule.')
+if input('Install /etc/udev/rules.d/70-omarchy-tablet.rules? [y/N] ').strip().lower()!='y':sys.exit(0)
+with tempfile.NamedTemporaryFile(mode='w') as f:
+ f.write(rules);f.flush()
+ subprocess.run(['sudo','install','-m644',f.name,'/etc/udev/rules.d/70-omarchy-tablet.rules'],check=True)
+subprocess.run(['sudo','udevadm','control','--reload-rules'],check=True)
+for event,_ in switch_devices():subprocess.run(['sudo','udevadm','trigger','--subsystem-match=input','--sysname-match='+event],check=True)
+print('Rule installed. Run scripts/doctor to verify.')

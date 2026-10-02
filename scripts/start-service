@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Keep the controller alive long enough to restore display state on unload.
+set -euo pipefail
+plugin_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+systemctl --user stop omarchy-tablet-plugin.service 2>/dev/null || true
+service_env=()
+for key in WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_RUNTIME_DIR XDG_CONFIG_HOME XDG_DATA_HOME; do
+  if [[ -v $key ]]; then service_env+=("--setenv=$key=${!key}"); fi
+done
+exec systemd-run --user --collect --wait --quiet --unit=omarchy-tablet-plugin --property=KillMode=mixed --property=TimeoutStopSec=10 "${service_env[@]}" "$plugin_dir/scripts/tablet" daemon
